@@ -7,7 +7,9 @@ import com.example.tompkins.model.Direction;
 import com.example.tompkins.model.RobotState;
 import com.example.tompkins.model.Status;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -20,10 +22,11 @@ public class NavigationService {
         Set<Coordinate> obstacles = new HashSet<>(request.obstacles() == null ? Set.of() : request.obstacles());
         RobotState state = new RobotState(request.startPosition(), request.startDirection());
         Status status = Status.SUCCESS;
-        // list.add(start position)
+        List<Coordinate> path = new ArrayList<>();
+        path.add(state.position()); // add start position to path history
 
         if (request.commands() == null || request.commands().isBlank()) {
-            return new NavigationResponse(state.position(), state.direction(), status);
+            return new NavigationResponse(state.position(), state.direction(), path, status);
         }
 
         for (char command : request.commands().toUpperCase(Locale.ROOT).toCharArray()) {
@@ -45,7 +48,7 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());
-                                //list.add()
+                                path.add(state.position());
                             }
                         } else {
                             Coordinate wrappedPosition = new Coordinate(nextPosition.x(), 0);
@@ -53,7 +56,7 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());
-                                //list add position
+                                path.add(state.position());
                             }                      
                         }
                     } else if (nextPosition.x() < 0 || nextPosition.y() < 0) { // if robot goes into negative, set next position to be grid height or width
@@ -63,28 +66,29 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());   
-                                //add to path
+                                path.add(state.position());
                             }                        
                         } else {
                             Coordinate wrappedPosition = new Coordinate(nextPosition.x(), request.height());
                             if (obstacles.contains(wrappedPosition)) {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
-                            state = new RobotState(wrappedPosition, state.direction());                            
+                            state = new RobotState(wrappedPosition, state.direction());
+                            path.add(state.position());
                             }
                         }
                     } else if (obstacles.contains(nextPosition)) {
                         status = Status.STOPPED_BY_OBSTACLE;
                     } else {
                         state = new RobotState(nextPosition, state.direction());
-                        // add path
+                        path.add(state.position());
                     }
                 }
                 default -> throw new IllegalArgumentException("Unsupported command: " + command); // or System.out.println("Ignoring unsupported command: " + command);
             }
         }
 
-        return new NavigationResponse(state.position(), state.direction(), status); // include path arg
+        return new NavigationResponse(state.position(), state.direction(), path, status);
     }
 
     private void validateRequest(NavigationRequest request) {
@@ -115,4 +119,3 @@ public class NavigationService {
         };
     }
 }
-
