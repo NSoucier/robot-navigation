@@ -7,6 +7,7 @@ import com.example.tompkins.model.Status;
 public record NavigationResponse(
         Coordinate finalPosition,
         Direction finalDirection,
+        //path
         Status status
 ) {
 }

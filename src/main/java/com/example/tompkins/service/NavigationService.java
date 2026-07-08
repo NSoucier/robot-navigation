@@ -20,6 +20,7 @@ public class NavigationService {
         Set<Coordinate> obstacles = new HashSet<>(request.obstacles() == null ? Set.of() : request.obstacles());
         RobotState state = new RobotState(request.startPosition(), request.startDirection());
         Status status = Status.SUCCESS;
+        // list.add(start position)
 
         if (request.commands() == null || request.commands().isBlank()) {
             return new NavigationResponse(state.position(), state.direction(), status);
@@ -44,6 +45,7 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());
+                                //list.add()
                             }
                         } else {
                             Coordinate wrappedPosition = new Coordinate(nextPosition.x(), 0);
@@ -51,6 +53,7 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());
+                                //list add position
                             }                      
                         }
                     } else if (nextPosition.x() < 0 || nextPosition.y() < 0) { // if robot goes into negative, set next position to be grid height or width
@@ -60,6 +63,7 @@ public class NavigationService {
                                 status = Status.STOPPED_BY_OBSTACLE;
                             } else {
                                 state = new RobotState(wrappedPosition, state.direction());   
+                                //add to path
                             }                        
                         } else {
                             Coordinate wrappedPosition = new Coordinate(nextPosition.x(), request.height());
@@ -73,13 +77,14 @@ public class NavigationService {
                         status = Status.STOPPED_BY_OBSTACLE;
                     } else {
                         state = new RobotState(nextPosition, state.direction());
+                        // add path
                     }
                 }
                 default -> throw new IllegalArgumentException("Unsupported command: " + command); // or System.out.println("Ignoring unsupported command: " + command);
             }
         }
 
-        return new NavigationResponse(state.position(), state.direction(), status);
+        return new NavigationResponse(state.position(), state.direction(), status); // include path arg
     }
 
     private void validateRequest(NavigationRequest request) {
